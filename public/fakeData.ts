@@ -1,0 +1,17 @@
+export const tickerData: { id: string; basePrice: number }[] = [
+  { id: "AAPL", basePrice: 250 },
+  { id: "MSFT", basePrice: 480 },
+  { id: "GOOG", basePrice: 2800 },
+  { id: "AMZN", basePrice: 230 },
+  { id: "TSLA", basePrice: 445 },
+  { id: "META", basePrice: 600 },
+  { id: "NVDA", basePrice: 185 },
+  { id: "AMD", basePrice: 230 },
+  { id: "NFLX", basePrice: 1060 },
+  { id: "INTC", basePrice: 35 },
+  { id: "ORCL", basePrice: 220 },
+  { id: "CSCO", basePrice: 65 },
+  { id: "IBM", basePrice: 305 },
+  { id: "ADBE", basePrice: 310 },
+  { id: "CRM", basePrice: 225 },
+];
