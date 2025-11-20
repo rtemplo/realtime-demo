@@ -89,7 +89,7 @@
 }
 
 .gridContainer[data-theme="dark"] :global(.ag-floating-filter-input) {
-  background-color: #444 !important;
+  /* background-color: #444 !important; */
   color: #f5f5f5 !important;
   border-color: #555 !important;
 }

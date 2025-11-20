@@ -25,7 +25,7 @@ export default function App() {
 
   return (
     <div className="container" data-theme={isDarkMode ? "dark" : "light"}>
-      <h2>Real Time AG Grid Request Animation Frame Sample</h2>
+      <h2>Real Time AG Grid/RAF Demo</h2>
       <TradingGrid
         updates={updates}
         isConnected={isConnected}

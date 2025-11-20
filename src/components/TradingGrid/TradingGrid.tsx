@@ -129,7 +129,8 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
             newValue > oldValue ? "price-up" : "price-down";
 
           console.log(
-            `${update.id} ${field}: ${oldValue} -> ${newValue} = ${cellFlashClass}`,
+            `%c${update.id} ${field}: ${oldValue} -> ${newValue} = ${cellFlashClass === "price-up" ? "⬆️" : "⬇️"}`,
+            `color: ${cellFlashClass === "price-up" ? "green" : "red"}`
           );
 
           setTimeout(() => {
