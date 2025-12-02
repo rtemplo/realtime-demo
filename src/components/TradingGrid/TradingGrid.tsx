@@ -38,6 +38,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
     isDarkModeRef.current = isDarkMode;
   }, [isDarkMode]);
 
+  // Grid data is initialized without prices. Prices are updated via websocket updates.
   const [rowData] = useState<PriceRow[]>(() =>
     tickerData.map((ticker) => ({
       id: ticker.id,
@@ -93,6 +94,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
   React.useEffect(() => {
     console.log("TradingGrid received updates:", updates);
     if (!updates.length) return;
+    
     const api = gridRef.current?.api;
     if (!api) return;
 
@@ -137,6 +139,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
             const cellElement = document.querySelector(
               `[row-id="${update.id}"] [col-id="${field}"]`,
             ) as HTMLElement;
+            
             if (cellElement) {
               const isUp = newValue > oldValue;
               const darkMode = isDarkModeRef.current;
