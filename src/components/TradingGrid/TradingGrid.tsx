@@ -15,6 +15,7 @@ interface TradingGridProps {
   fps: number;
   isConnected: boolean;
   isDarkMode: boolean;
+  debug?: boolean;
   updates: PriceUpdate[];
   onFpsChange: (fps: number) => void;
   onToggleConnection: () => void;
@@ -25,6 +26,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
   fps,
   isConnected,
   isDarkMode,
+  debug = false,
   updates,
   onFpsChange,
   onToggleConnection,
@@ -107,7 +109,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
   );
 
   React.useEffect(() => {
-    console.log("TradingGrid received updates:", updates);
+    if (debug) console.log("TradingGrid received updates:", updates);
     if (!updates.length) return;
 
     const api = gridRef.current?.api;
@@ -125,9 +127,9 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
       ...u,
     }));
 
-    console.log("Applying transaction:", updateRows);
+    if (debug) console.log("Applying transaction:", updateRows);
     const result = api.applyTransaction({ update: updateRows });
-    console.log("Transaction result:", result);
+    if (debug) console.log("Transaction result:", result);
 
     updates.forEach((update) => {
       const rowNode = api.getRowNode(update.id);
@@ -144,10 +146,12 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
           if (newValue === oldValue) return; // Skip if no change
 
           const priceUp = newValue > oldValue;
-          console.log(
-            `%c${update.id} ${field}: ${oldValue} -> ${newValue} = ${priceUp ? "⬆️" : "⬇️"}`,
-            `color: ${priceUp ? "green" : "red"}`,
-          );
+          if (debug) {
+            console.log(
+              `%c${update.id} ${field}: ${oldValue} -> ${newValue} = ${priceUp ? "⬆️" : "⬇️"}`,
+              `color: ${priceUp ? "green" : "red"}`,
+            );
+          }
 
           const cellElement = document.querySelector(
             `[row-id="${update.id}"] [col-id="${field}"]`,
@@ -196,7 +200,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
         }
       });
     });
-  }, [updates]);
+  }, [updates, debug]);
 
   const getRowId = useCallback(
     (params: { data: PriceRow }) => params.data.id,

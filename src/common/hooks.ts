@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PriceUpdate } from "./types";
 
-export function usePriceFeed() {
+export function usePriceFeed(debug = false) {
   const latestRef = useRef<Record<string, PriceUpdate>>({});
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -19,13 +19,13 @@ export function usePriceFeed() {
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("WebSocket connected");
+      if (debug) console.log("WebSocket connected");
       setIsConnected(true);
     };
 
     ws.onmessage = (event) => {
       const update: PriceUpdate = JSON.parse(event.data);
-      console.log("Received update:", update);
+      if (debug) console.log("Received update:", update);
 
       latestRef.current[update.id] = {
         ...(latestRef.current[update.id] || {}),
@@ -38,11 +38,11 @@ export function usePriceFeed() {
     };
 
     ws.onclose = () => {
-      console.log("WebSocket closed");
+      if (debug) console.log("WebSocket closed");
       wsRef.current = null;
       setIsConnected(false);
     };
-  }, []);
+  }, [debug]);
 
   const disconnect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -72,6 +72,7 @@ export function usePriceFeed() {
 export function useRafUpdates(
   latestRef: React.RefObject<Record<string, PriceUpdate>>,
   fps: number = 60,
+  debug = false,
 ) {
   const [batch, setBatch] = useState<PriceUpdate[]>([]);
 
@@ -92,7 +93,7 @@ export function useRafUpdates(
       const keys = Object.keys(current);
       if (keys.length) {
         const arr = keys.map((k) => current[k]);
-        console.log("Sending batch update:", arr);
+        if (debug) console.log("Sending batch update:", arr);
         latestRef.current = {};
         setBatch(arr);
       }
@@ -100,7 +101,7 @@ export function useRafUpdates(
 
     frameId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frameId);
-  }, [fps, latestRef]);
+  }, [fps, latestRef, debug]);
 
   return batch;
 }
