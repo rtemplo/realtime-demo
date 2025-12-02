@@ -94,7 +94,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
   React.useEffect(() => {
     console.log("TradingGrid received updates:", updates);
     if (!updates.length) return;
-    
+
     const api = gridRef.current?.api;
     if (!api) return;
 
@@ -127,55 +127,51 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
           const oldValue = previousRow[field] as number;
           if (newValue === oldValue) return; // Skip if no change
 
-          const cellFlashClass =
-            newValue > oldValue ? "price-up" : "price-down";
-
+          const priceUp = newValue > oldValue;
           console.log(
-            `%c${update.id} ${field}: ${oldValue} -> ${newValue} = ${cellFlashClass === "price-up" ? "⬆️" : "⬇️"}`,
-            `color: ${cellFlashClass === "price-up" ? "green" : "red"}`
+            `%c${update.id} ${field}: ${oldValue} -> ${newValue} = ${priceUp ? "⬆️" : "⬇️"}`,
+            `color: ${priceUp ? "green" : "red"}`,
           );
 
-          setTimeout(() => {
-            const cellElement = document.querySelector(
-              `[row-id="${update.id}"] [col-id="${field}"]`,
-            ) as HTMLElement;
-            
-            if (cellElement) {
-              const isUp = newValue > oldValue;
-              const darkMode = isDarkModeRef.current;
+          const cellElement = document.querySelector(
+            `[row-id="${update.id}"] [col-id="${field}"]`,
+          ) as HTMLElement;
 
-              // Set initial flash color with inline style to override everything
+          if (cellElement) {
+            const isUp = newValue > oldValue;
+            const darkMode = isDarkModeRef.current;
+
+            // Set initial flash color with inline style to override everything
+            cellElement.style.setProperty(
+              "background-color",
+              darkMode
+                ? isUp
+                  ? "#4ade80"
+                  : "#f87171"
+                : isUp
+                  ? "#90ee90"
+                  : "#ffb6c1",
+              "important",
+            );
+
+            setTimeout(() => {
+              cellElement.style.setProperty(
+                "transition",
+                "background-color 500ms ease-out",
+                "important",
+              );
               cellElement.style.setProperty(
                 "background-color",
-                darkMode
-                  ? isUp
-                    ? "#4ade80"
-                    : "#f87171"
-                  : isUp
-                    ? "#90ee90"
-                    : "#ffb6c1",
+                darkMode ? "#3a3a3a" : "transparent",
                 "important",
               );
 
               setTimeout(() => {
-                cellElement.style.setProperty(
-                  "transition",
-                  "background-color 500ms ease-out",
-                  "important",
-                );
-                cellElement.style.setProperty(
-                  "background-color",
-                  darkMode ? "#3a3a3a" : "transparent",
-                  "important",
-                );
-
-                setTimeout(() => {
-                  cellElement.style.removeProperty("background-color");
-                  cellElement.style.removeProperty("transition");
-                }, 500);
-              }, 50);
-            }
-          }, 0);
+                cellElement.style.removeProperty("background-color");
+                cellElement.style.removeProperty("transition");
+              }, 500);
+            }, 50);
+          }
         }
       });
     });
