@@ -30,6 +30,21 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
   onToggleConnection,
   onToggleDarkMode,
 }) => {
+  /**
+   * Optimizations using refs:
+   *
+   * Since this is a real-time updating grid, we use refs to bypass React's state update
+   * cycle for certain values. This helps in achieving smoother updates in Ag-Grid.
+   * This is done using Ag-Grid's Transaction Update mechanism to efficiently update only the rows
+   * that have changed.
+   *
+   * The previousValuesRef is used to store the last known values of each row to determine
+   * whether a price has gone up or down, enabling the cell flashing effect. It too is a ref
+   * to avoid unnecessary re-renders.
+   *
+   * isDarkModeRef is used within the update effect to ensure the correct theme is applied
+   * during the flashing effect. It too is a ref to avoid causing re-renders when the theme changes.
+   */
   const gridRef = useRef<AgGridReact<PriceRow>>(null);
   const previousValuesRef = useRef<Record<string, PriceRow>>({});
   const isDarkModeRef = useRef(isDarkMode);
@@ -121,6 +136,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
       const previousRow = previousValuesRef.current[update.id];
       if (!previousRow) return;
 
+      // Implementation of cell flashing effect to indicate price changes.
       (["bid", "ask", "last"] as const).forEach((field) => {
         if (update[field] !== undefined && previousRow[field] !== undefined) {
           const newValue = update[field] as number;
@@ -154,6 +170,11 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
               "important",
             );
 
+            /**
+             * These setTimeouts are necessary for animation timing.
+             * This was previoulsy done using CSS classes, but inline styles with !important
+             * ensure the styles take precedence over Ag-Grid's own styles.
+             */
             setTimeout(() => {
               cellElement.style.setProperty(
                 "transition",
