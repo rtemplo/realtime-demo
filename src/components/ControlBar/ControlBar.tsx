@@ -46,13 +46,17 @@ export const ControlBar: React.FC<ControlBarProps> = ({
       >
         {isDarkMode ? "☀️ Light" : "🌙 Dark"}
       </button>
-      <button
-        type="button"
-        onClick={onToggleDebug}
-        className={styles.debugButton}
-      >
-        {debug ? "🐛 Debug Off" : "🐛 Debug On"}
-      </button>
+      <div className={styles.fpsControl}>
+        <label htmlFor="debug-checkbox">
+          <input
+            id="debug-checkbox"
+            type="checkbox"
+            checked={debug}
+            onChange={onToggleDebug}
+          />
+          🐛 Debug
+        </label>
+      </div>
       <div className={styles.fpsControl}>
         <label htmlFor="fps-slider">FPS: {fps}</label>
         <input
