@@ -46,12 +46,12 @@ export default function App() {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
-  const { latestRef, isConnected, toggleConnection } = usePriceFeed(
+  const { pricingData, isConnected, toggleConnection } = usePriceFeed(
     debug,
     addWsLog,
   );
 
-  const updates = useRafUpdates(latestRef, fps, debug, addGridLog);
+  const batchedPricingData = useRafUpdates(pricingData, fps, debug, addGridLog);
 
   console.log("App render");
 
@@ -72,7 +72,7 @@ export default function App() {
         />
         <div style={{ display: "flex" }}>
           <TradingGrid
-            updates={updates}
+            batchedPricingData={batchedPricingData}
             isDarkMode={isDarkMode}
             debug={debug}
             gridApiRef={gridApiRef}

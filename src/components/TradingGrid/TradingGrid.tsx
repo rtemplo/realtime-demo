@@ -14,7 +14,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 interface TradingGridProps {
   isDarkMode: boolean;
   debug?: boolean;
-  updates: PriceUpdate[];
+  batchedPricingData: PriceUpdate[];
   gridApiRef: React.RefObject<AgGridReact<PriceRow> | null>;
   onLog?: (message: string) => void;
 }
@@ -22,7 +22,7 @@ interface TradingGridProps {
 export const TradingGrid: React.FC<TradingGridProps> = ({
   isDarkMode,
   debug = false,
-  updates,
+  batchedPricingData,
   gridApiRef,
   onLog,
 }) => {
@@ -104,26 +104,26 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
   );
 
   React.useEffect(() => {
-    if (!updates.length) return;
+    if (!batchedPricingData.length) return;
 
     const api = gridRef.current?.api;
     if (!api) return;
 
-    updates.forEach((update) => {
+    batchedPricingData.forEach((update) => {
       const rowNode = api.getRowNode(update.id);
       if (rowNode?.data) {
         previousValuesRef.current[update.id] = { ...rowNode.data };
       }
     });
 
-    const updateRows: PriceRow[] = updates.map((u) => ({
+    const updateRows: PriceRow[] = batchedPricingData.map((u) => ({
       symbol: u.id,
       ...u,
     }));
 
     api.applyTransaction({ update: updateRows });
 
-    updates.forEach((update) => {
+    batchedPricingData.forEach((update) => {
       const rowNode = api.getRowNode(update.id);
       if (!rowNode || !rowNode.data) return;
 
@@ -191,7 +191,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
         }
       });
     });
-  }, [updates, gridRef?.current?.api]);
+  }, [batchedPricingData, gridRef?.current?.api]);
 
   const getRowId = useCallback(
     (params: { data: PriceRow }) => params.data.id,

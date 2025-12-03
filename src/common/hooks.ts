@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { PriceUpdate } from "./types";
 
 export function usePriceFeed(debug = false, onLog?: (message: string) => void) {
-  const latestRef = useRef<Record<string, PriceUpdate>>({});
+  const pricingData = useRef<Record<string, PriceUpdate>>({});
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [shouldConnect, setShouldConnect] = useState(true);
@@ -37,8 +37,8 @@ export function usePriceFeed(debug = false, onLog?: (message: string) => void) {
       if (debugRef.current && onLogRef.current)
         onLogRef.current(`Received update: ${JSON.stringify(update)}`);
 
-      latestRef.current[update.id] = {
-        ...(latestRef.current[update.id] || {}),
+      pricingData.current[update.id] = {
+        ...(pricingData.current[update.id] || {}),
         ...update,
       };
     };
@@ -80,11 +80,11 @@ export function usePriceFeed(debug = false, onLog?: (message: string) => void) {
     setShouldConnect((prev) => !prev);
   }, []);
 
-  return { latestRef, isConnected, toggleConnection };
+  return { pricingData, isConnected, toggleConnection };
 }
 
 export function useRafUpdates(
-  latestRef: React.RefObject<Record<string, PriceUpdate>>,
+  pricingData: React.RefObject<Record<string, PriceUpdate>>,
   fps: number = 60,
   debug = false,
   onLog?: (message: string) => void,
@@ -102,13 +102,13 @@ export function useRafUpdates(
       if (time - lastTime < frameInterval) return;
       lastTime = time;
 
-      const current = latestRef.current;
+      const current = pricingData.current;
       if (!current) return;
 
       const keys = Object.keys(current);
       if (keys.length) {
         const arr = keys.map((k) => current[k]);
-        latestRef.current = {};
+        pricingData.current = {};
         setBatch(arr);
 
         if (debug && onLog) onLog(`Sending batch update: ${arr.length} items`);
@@ -117,7 +117,7 @@ export function useRafUpdates(
 
     frameId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frameId);
-  }, [fps, latestRef, onLog, debug]);
+  }, [fps, pricingData, onLog, debug]);
 
   return batch;
 }
