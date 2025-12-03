@@ -17,7 +17,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <LoggingProvider maxEntries={75}>
+      <LoggingProvider maxEntries={500}>
         <PriceFeedProvider debug={debug}>
           <AppContent debug={debug} onDebugChange={setDebug} />
         </PriceFeedProvider>
@@ -57,7 +57,7 @@ function AppContent({
         />
         <div style={{ display: "flex" }}>
           <TradingGrid debug={debug} fps={fps} gridApiRef={gridApiRef} />
-          {debug && <LogPanel maxEntries={75} />}
+          {debug && <LogPanel />}
         </div>
       </div>
     </div>

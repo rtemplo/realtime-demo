@@ -4,12 +4,8 @@ import { useLogging } from "../../contexts/LoggingContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import styles from "./LogPanel.module.css";
 
-interface LogPanelProps {
-  maxEntries?: number;
-}
-
-export const LogPanel: React.FC<LogPanelProps> = ({ maxEntries = 75 }) => {
-  const { wsLogs, gridLogs } = useLogging();
+export const LogPanel: React.FC = () => {
+  const { wsLogs, gridLogs, maxEntries } = useLogging();
   const { isDarkMode } = useTheme();
   const wsLogEndRef = useRef<HTMLDivElement>(null);
   const gridLogEndRef = useRef<HTMLDivElement>(null);

@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useState } from "react";
 interface LoggingContextValue {
   wsLogs: string[];
   gridLogs: string[];
+  maxEntries: number;
   addWsLog: (message: string) => void;
   addGridLog: (message: string) => void;
 }
@@ -17,7 +18,7 @@ interface LoggingProviderProps {
 
 export function LoggingProvider({
   children,
-  maxEntries = 75,
+  maxEntries = 100,
 }: LoggingProviderProps) {
   const [wsLogs, setWsLogs] = useState<string[]>([]);
   const [gridLogs, setGridLogs] = useState<string[]>([]);
@@ -39,6 +40,7 @@ export function LoggingProvider({
   const value: LoggingContextValue = {
     wsLogs,
     gridLogs,
+    maxEntries,
     addWsLog,
     addGridLog,
   };

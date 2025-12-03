@@ -58,8 +58,7 @@ export function PriceFeedProvider({
 
     ws.onmessage = (event) => {
       const update: PriceUpdate = JSON.parse(event.data);
-      if (debugRef.current)
-        addWsLogRef.current(`Received update: ${JSON.stringify(update)}`);
+      if (debugRef.current) addWsLogRef.current(`${JSON.stringify(update)}`);
 
       pricingData.current[update.id] = {
         ...(pricingData.current[update.id] || {}),

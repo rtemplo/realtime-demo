@@ -59,13 +59,13 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
         pricingData.current = {};
         setBatchedPricingData(arr);
 
-        if (debug) addGridLog(`Sending batch update: ${arr.length} items`);
+        // if (debug) addGridLog(`Sending batch update: ${arr.length} items`);
       }
     };
 
     frameId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frameId);
-  }, [fps, pricingData, addGridLog, debug]);
+  }, [fps, pricingData]);
 
   /**
    * Optimizations using refs:
@@ -178,6 +178,11 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
           const oldValue = previousRow[field] as number;
           if (newValue === oldValue) return; // Skip if no change
 
+          if (debug)
+            addGridLog(
+              `${update.id} ${field}: ${oldValue} -> ${newValue} ${newValue > oldValue ? "[↑ UP]" : "[↓ DOWN]"}`,
+            );
+
           const cellElement = document.querySelector(
             `[row-id="${update.id}"] [col-id="${field}"]`,
           ) as HTMLElement;
@@ -225,7 +230,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
         }
       });
     });
-  }, [batchedPricingData, gridRef?.current?.api]);
+  }, [batchedPricingData, gridRef?.current?.api, debug, addGridLog]);
 
   const getRowId = useCallback(
     (params: { data: PriceRow }) => params.data.id,
