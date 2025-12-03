@@ -1,18 +1,16 @@
 import type React from "react";
 import { useEffect, useRef } from "react";
 import { useLogging } from "../../contexts/LoggingContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import styles from "./LogPanel.module.css";
 
 interface LogPanelProps {
-  isDarkMode: boolean;
   maxEntries?: number;
 }
 
-export const LogPanel: React.FC<LogPanelProps> = ({
-  isDarkMode,
-  maxEntries = 75,
-}) => {
+export const LogPanel: React.FC<LogPanelProps> = ({ maxEntries = 75 }) => {
   const { wsLogs, gridLogs } = useLogging();
+  const { isDarkMode } = useTheme();
   const wsLogEndRef = useRef<HTMLDivElement>(null);
   const gridLogEndRef = useRef<HTMLDivElement>(null);
 

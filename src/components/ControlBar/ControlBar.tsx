@@ -1,27 +1,25 @@
 import type React from "react";
 import { usePriceFeed } from "../../contexts/PriceFeedContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import styles from "./ControlBar.module.css";
 
 interface ControlBarProps {
-  isDarkMode: boolean;
   debug: boolean;
   fps: number;
-  onToggleDarkMode: () => void;
   onToggleDebug: () => void;
   onFpsChange: (fps: number) => void;
   onClearFilters: () => void;
 }
 
 export const ControlBar: React.FC<ControlBarProps> = ({
-  isDarkMode,
   debug,
   fps,
-  onToggleDarkMode,
   onToggleDebug,
   onFpsChange,
   onClearFilters,
 }) => {
   const { isConnected, toggleConnection } = usePriceFeed();
+  const { isDarkMode, toggleDarkMode } = useTheme();
   return (
     <div className={styles.buttonBar}>
       <button
@@ -43,7 +41,7 @@ export const ControlBar: React.FC<ControlBarProps> = ({
       </button>
       <button
         type="button"
-        onClick={onToggleDarkMode}
+        onClick={toggleDarkMode}
         className={styles.themeButton}
       >
         {isDarkMode ? "☀️ Light" : "🌙 Dark"}

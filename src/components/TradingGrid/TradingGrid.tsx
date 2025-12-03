@@ -12,6 +12,7 @@ import { tickerData } from "../../../public/fakeData";
 import type { PriceRow, PriceUpdate } from "../../common/types";
 import { useLogging } from "../../contexts/LoggingContext";
 import { usePriceFeed } from "../../contexts/PriceFeedContext";
+import { useTheme } from "../../contexts/ThemeContext";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -20,20 +21,19 @@ import styles from "./TradingGrid.module.css";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface TradingGridProps {
-  isDarkMode: boolean;
   debug?: boolean;
   fps: number;
   gridApiRef: React.RefObject<AgGridReact<PriceRow> | null>;
 }
 
 export const TradingGrid: React.FC<TradingGridProps> = ({
-  isDarkMode,
   debug = false,
   fps,
   gridApiRef,
 }) => {
   const { pricingData } = usePriceFeed();
   const { addGridLog } = useLogging();
+  const { isDarkMode } = useTheme();
   const [batchedPricingData, setBatchedPricingData] = useState<PriceUpdate[]>(
     [],
   );
@@ -66,6 +66,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
     frameId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frameId);
   }, [fps, pricingData, addGridLog, debug]);
+
   /**
    * Optimizations using refs:
    *

@@ -33,10 +33,12 @@ export function PriceFeedProvider({
   const [isConnected, setIsConnected] = useState(false);
   const [shouldConnect, setShouldConnect] = useState(true);
   const debugRef = useRef(debug);
+  const addWsLogRef = useRef(addWsLog);
 
   useEffect(() => {
     debugRef.current = debug;
-  }, [debug]);
+    addWsLogRef.current = addWsLog;
+  }, [debug, addWsLog]);
 
   const connect = useCallback(() => {
     if (
@@ -51,13 +53,13 @@ export function PriceFeedProvider({
 
     ws.onopen = () => {
       setIsConnected(true);
-      if (debugRef.current) addWsLog("WebSocket connected");
+      if (debugRef.current) addWsLogRef.current("WebSocket connected");
     };
 
     ws.onmessage = (event) => {
       const update: PriceUpdate = JSON.parse(event.data);
       if (debugRef.current)
-        addWsLog(`Received update: ${JSON.stringify(update)}`);
+        addWsLogRef.current(`Received update: ${JSON.stringify(update)}`);
 
       pricingData.current[update.id] = {
         ...(pricingData.current[update.id] || {}),
@@ -72,17 +74,17 @@ export function PriceFeedProvider({
     ws.onclose = () => {
       wsRef.current = null;
       setIsConnected(false);
-      if (debugRef.current) addWsLog("WebSocket closed");
+      if (debugRef.current) addWsLogRef.current("WebSocket closed");
     };
-  }, [addWsLog]);
+  }, []);
 
   const disconnect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.close();
 
-      if (debugRef.current) addWsLog("WebSocket disconnected");
+      if (debugRef.current) addWsLogRef.current("WebSocket disconnected");
     }
-  }, [addWsLog]);
+  }, []);
 
   useEffect(() => {
     if (shouldConnect) {
