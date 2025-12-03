@@ -17,7 +17,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <LoggingProvider maxEntries={500}>
+      <LoggingProvider maxEntries={100}>
         <PriceFeedProvider debug={debug}>
           <AppContent debug={debug} onDebugChange={setDebug} />
         </PriceFeedProvider>

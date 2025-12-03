@@ -1,10 +1,16 @@
 import type React from "react";
-import { createContext, useCallback, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 interface LoggingContextValue {
   wsLogs: string[];
   gridLogs: string[];
-  maxEntries: number;
   addWsLog: (message: string) => void;
   addGridLog: (message: string) => void;
 }
@@ -22,28 +28,40 @@ export function LoggingProvider({
 }: LoggingProviderProps) {
   const [wsLogs, setWsLogs] = useState<string[]>([]);
   const [gridLogs, setGridLogs] = useState<string[]>([]);
+  const cappedMaxEntries = Math.min(maxEntries, 250);
+  const maxEntriesRef = useRef(cappedMaxEntries);
 
-  const addWsLog = useCallback(
-    (message: string) => {
-      setWsLogs((prev) => [...prev, message].slice(-maxEntries));
-    },
-    [maxEntries],
+  maxEntriesRef.current = cappedMaxEntries;
+
+  const addWsLog = useCallback((message: string) => {
+    setWsLogs((prev) => {
+      const maxLen = maxEntriesRef.current;
+      if (prev.length < maxLen) {
+        return [...prev, message];
+      }
+      return [...prev.slice(1), message];
+    });
+  }, []);
+
+  const addGridLog = useCallback((message: string) => {
+    setGridLogs((prev) => {
+      const maxLen = maxEntriesRef.current;
+      if (prev.length < maxLen) {
+        return [...prev, message];
+      }
+      return [...prev.slice(1), message];
+    });
+  }, []);
+
+  const value: LoggingContextValue = useMemo(
+    () => ({
+      wsLogs,
+      gridLogs,
+      addWsLog,
+      addGridLog,
+    }),
+    [wsLogs, gridLogs, addWsLog, addGridLog],
   );
-
-  const addGridLog = useCallback(
-    (message: string) => {
-      setGridLogs((prev) => [...prev, message].slice(-maxEntries));
-    },
-    [maxEntries],
-  );
-
-  const value: LoggingContextValue = {
-    wsLogs,
-    gridLogs,
-    maxEntries,
-    addWsLog,
-    addGridLog,
-  };
 
   return (
     <LoggingContext.Provider value={value}>{children}</LoggingContext.Provider>

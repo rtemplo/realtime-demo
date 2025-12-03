@@ -63,10 +63,10 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
       const keys = Object.keys(current);
       if (keys.length) {
         const arr = keys.map((k) => current[k]);
+        // if (debug)
+        // addGridLogRef.current(`Sending batch update: ${arr.length} items`);
         pricingData.current = {};
         setBatchedPricingData(arr);
-
-        // if (debug) addGridLog(`Sending batch update: ${arr.length} items`);
       }
     };
 

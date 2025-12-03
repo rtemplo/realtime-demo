@@ -5,7 +5,7 @@ import { useTheme } from "../../contexts/ThemeContext";
 import styles from "./LogPanel.module.css";
 
 export const LogPanel: React.FC = () => {
-  const { wsLogs, gridLogs, maxEntries } = useLogging();
+  const { wsLogs, gridLogs } = useLogging();
   const { isDarkMode } = useTheme();
   const wsLogEndRef = useRef<HTMLDivElement>(null);
   const gridLogEndRef = useRef<HTMLDivElement>(null);
@@ -22,7 +22,7 @@ export const LogPanel: React.FC = () => {
     <div className={styles.logPanel} data-theme={isDarkMode ? "dark" : "light"}>
       <div className={styles.logSection}>
         <h3 className={styles.logTitle}>
-          Server Response Stream <i>[last {maxEntries}]</i>
+          Server Response Stream <i>[last {wsLogs.length}]</i>
         </h3>
         <div className={styles.logContent}>
           {wsLogs.map((log, index) => {
@@ -40,7 +40,7 @@ export const LogPanel: React.FC = () => {
       </div>
       <div className={styles.logSection}>
         <h3 className={styles.logTitle}>
-          Grid Cell Updates <i>[last {maxEntries}]</i>
+          Grid Cell Updates <i>[last {gridLogs.length}]</i>
         </h3>
         <div className={styles.logContent}>
           {gridLogs.map((log, index) => {

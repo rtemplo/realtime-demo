@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -101,11 +102,14 @@ export function PriceFeedProvider({
     setShouldConnect((prev) => !prev);
   }, []);
 
-  const value: PriceFeedContextValue = {
-    pricingData,
-    isConnected,
-    toggleConnection,
-  };
+  const value: PriceFeedContextValue = useMemo(
+    () => ({
+      pricingData,
+      isConnected,
+      toggleConnection,
+    }),
+    [isConnected, toggleConnection],
+  );
 
   return (
     <PriceFeedContext.Provider value={value}>
