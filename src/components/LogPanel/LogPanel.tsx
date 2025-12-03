@@ -22,7 +22,7 @@ export const LogPanel: React.FC = () => {
     <div className={styles.logPanel} data-theme={isDarkMode ? "dark" : "light"}>
       <div className={styles.logSection}>
         <h3 className={styles.logTitle}>
-          Server Logs <i>[last {maxEntries}]</i>
+          Server Response Stream <i>[last {maxEntries}]</i>
         </h3>
         <div className={styles.logContent}>
           {wsLogs.map((log, index) => {
@@ -40,7 +40,7 @@ export const LogPanel: React.FC = () => {
       </div>
       <div className={styles.logSection}>
         <h3 className={styles.logTitle}>
-          Grid Logs <i>[last {maxEntries}]</i>
+          Grid Cell Updates <i>[last {maxEntries}]</i>
         </h3>
         <div className={styles.logContent}>
           {gridLogs.map((log, index) => {
