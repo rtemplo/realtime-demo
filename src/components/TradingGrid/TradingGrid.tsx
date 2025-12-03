@@ -37,6 +37,13 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
   const [batchedPricingData, setBatchedPricingData] = useState<PriceUpdate[]>(
     [],
   );
+  const addGridLogRef = useRef(addGridLog);
+  const debugRef = useRef(debug);
+
+  useEffect(() => {
+    addGridLogRef.current = addGridLog;
+    debugRef.current = debug;
+  }, [addGridLog, debug]);
 
   // useRafUpdates logic moved inline
   useEffect(() => {
@@ -178,8 +185,8 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
           const oldValue = previousRow[field] as number;
           if (newValue === oldValue) return; // Skip if no change
 
-          if (debug)
-            addGridLog(
+          if (debugRef.current)
+            addGridLogRef.current(
               `${update.id} ${field}: ${oldValue} -> ${newValue} ${newValue > oldValue ? "[↑ UP]" : "[↓ DOWN]"}`,
             );
 
@@ -230,7 +237,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
         }
       });
     });
-  }, [batchedPricingData, gridRef?.current?.api, debug, addGridLog]);
+  }, [batchedPricingData, gridRef]);
 
   const getRowId = useCallback(
     (params: { data: PriceRow }) => params.data.id,
