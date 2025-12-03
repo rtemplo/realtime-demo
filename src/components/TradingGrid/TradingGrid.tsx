@@ -1,9 +1,17 @@
 import type { ColDef } from "ag-grid-community";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { tickerData } from "../../../public/fakeData";
 import type { PriceRow, PriceUpdate } from "../../common/types";
+import { useLogging } from "../../contexts/LoggingContext";
+import { usePriceFeed } from "../../contexts/PriceFeedContext";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -14,18 +22,50 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 interface TradingGridProps {
   isDarkMode: boolean;
   debug?: boolean;
-  batchedPricingData: PriceUpdate[];
+  fps: number;
   gridApiRef: React.RefObject<AgGridReact<PriceRow> | null>;
-  onLog?: (message: string) => void;
 }
 
 export const TradingGrid: React.FC<TradingGridProps> = ({
   isDarkMode,
   debug = false,
-  batchedPricingData,
+  fps,
   gridApiRef,
-  onLog,
 }) => {
+  const { pricingData } = usePriceFeed();
+  const { addGridLog } = useLogging();
+  const [batchedPricingData, setBatchedPricingData] = useState<PriceUpdate[]>(
+    [],
+  );
+
+  // useRafUpdates logic moved inline
+  useEffect(() => {
+    let frameId: number;
+    let lastTime = performance.now();
+    const frameInterval = 1000 / fps;
+
+    const loop = (time: number) => {
+      frameId = requestAnimationFrame(loop);
+
+      if (time - lastTime < frameInterval) return;
+      lastTime = time;
+
+      const current = pricingData.current;
+      if (!current) return;
+
+      const keys = Object.keys(current);
+      if (keys.length) {
+        const arr = keys.map((k) => current[k]);
+        pricingData.current = {};
+        setBatchedPricingData(arr);
+
+        if (debug) addGridLog(`Sending batch update: ${arr.length} items`);
+      }
+    };
+
+    frameId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(frameId);
+  }, [fps, pricingData, addGridLog, debug]);
   /**
    * Optimizations using refs:
    *
@@ -136,13 +176,6 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
           const newValue = update[field] as number;
           const oldValue = previousRow[field] as number;
           if (newValue === oldValue) return; // Skip if no change
-
-          // const priceUp = newValue > oldValue;
-          // if (debug && onLog) {
-          //   onLog(
-          //     `${update.id} ${field}: ${oldValue} -> ${newValue} ${priceUp ? "[↑ UP]" : "[↓ DOWN]"}`,
-          //   );
-          // }
 
           const cellElement = document.querySelector(
             `[row-id="${update.id}"] [col-id="${field}"]`,

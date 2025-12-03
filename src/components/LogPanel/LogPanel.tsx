@@ -1,20 +1,18 @@
 import type React from "react";
 import { useEffect, useRef } from "react";
+import { useLogging } from "../../contexts/LoggingContext";
 import styles from "./LogPanel.module.css";
 
 interface LogPanelProps {
-  wsLogsRef: React.RefObject<string[]>;
-  gridLogsRef: React.RefObject<string[]>;
   isDarkMode: boolean;
   maxEntries?: number;
 }
 
 export const LogPanel: React.FC<LogPanelProps> = ({
-  wsLogsRef,
-  gridLogsRef,
   isDarkMode,
   maxEntries = 75,
 }) => {
+  const { wsLogs, gridLogs } = useLogging();
   const wsLogEndRef = useRef<HTMLDivElement>(null);
   const gridLogEndRef = useRef<HTMLDivElement>(null);
 
@@ -25,9 +23,6 @@ export const LogPanel: React.FC<LogPanelProps> = ({
   useEffect(() => {
     gridLogEndRef.current?.scrollIntoView({ behavior: "smooth" });
   });
-
-  const wsLogs = wsLogsRef.current || [];
-  const gridLogs = gridLogsRef.current || [];
 
   return (
     <div className={styles.logPanel} data-theme={isDarkMode ? "dark" : "light"}>

@@ -1,12 +1,11 @@
 import type React from "react";
+import { usePriceFeed } from "../../contexts/PriceFeedContext";
 import styles from "./ControlBar.module.css";
 
 interface ControlBarProps {
-  isConnected: boolean;
   isDarkMode: boolean;
   debug: boolean;
   fps: number;
-  onToggleConnection: () => void;
   onToggleDarkMode: () => void;
   onToggleDebug: () => void;
   onFpsChange: (fps: number) => void;
@@ -14,21 +13,20 @@ interface ControlBarProps {
 }
 
 export const ControlBar: React.FC<ControlBarProps> = ({
-  isConnected,
   isDarkMode,
   debug,
   fps,
-  onToggleConnection,
   onToggleDarkMode,
   onToggleDebug,
   onFpsChange,
   onClearFilters,
 }) => {
+  const { isConnected, toggleConnection } = usePriceFeed();
   return (
     <div className={styles.buttonBar}>
       <button
         type="button"
-        onClick={onToggleConnection}
+        onClick={toggleConnection}
         className={styles.connectButton}
         style={{
           backgroundColor: isConnected ? "#ff4444" : "#44ff44",
