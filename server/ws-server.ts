@@ -43,6 +43,7 @@ wss.on("connection", (ws) => {
     symbolsToUpdate.forEach((symbol) => {
       const update = generatePriceUpdate(symbol);
       ws.send(JSON.stringify(update));
+      // console.log(update);
     });
   }, 100);
 

@@ -1,11 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PriceUpdate } from "./types";
 
-export function usePriceFeed(debug = false) {
+export function usePriceFeed(debug = false, onLog?: (message: string) => void) {
   const latestRef = useRef<Record<string, PriceUpdate>>({});
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [shouldConnect, setShouldConnect] = useState(true);
+  const debugRef = useRef(debug);
+  const onLogRef = useRef(onLog);
+
+  useEffect(() => {
+    debugRef.current = debug;
+    onLogRef.current = onLog;
+  }, [debug, onLog]);
 
   const connect = useCallback(() => {
     if (
@@ -19,13 +26,16 @@ export function usePriceFeed(debug = false) {
     wsRef.current = ws;
 
     ws.onopen = () => {
-      if (debug) console.log("WebSocket connected");
       setIsConnected(true);
+      if (debugRef.current && onLogRef.current)
+        onLogRef.current("WebSocket connected");
     };
 
     ws.onmessage = (event) => {
       const update: PriceUpdate = JSON.parse(event.data);
-      if (debug) console.log("Received update:", update);
+      // console.log(update);
+      if (debugRef.current && onLogRef.current)
+        onLogRef.current(`Received update: ${JSON.stringify(update)}`);
 
       latestRef.current[update.id] = {
         ...(latestRef.current[update.id] || {}),
@@ -38,15 +48,19 @@ export function usePriceFeed(debug = false) {
     };
 
     ws.onclose = () => {
-      if (debug) console.log("WebSocket closed");
       wsRef.current = null;
       setIsConnected(false);
+      if (debugRef.current && onLogRef.current)
+        onLogRef.current("WebSocket closed");
     };
-  }, [debug]);
+  }, []);
 
   const disconnect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.close();
+
+      if (debugRef.current && onLogRef.current)
+        onLogRef.current("WebSocket disconnected");
     }
   }, []);
 
@@ -60,7 +74,7 @@ export function usePriceFeed(debug = false) {
     return () => {
       disconnect();
     };
-  }, [shouldConnect, connect, disconnect]);
+  }, [disconnect, connect, shouldConnect]);
 
   const toggleConnection = useCallback(() => {
     setShouldConnect((prev) => !prev);
@@ -73,6 +87,7 @@ export function useRafUpdates(
   latestRef: React.RefObject<Record<string, PriceUpdate>>,
   fps: number = 60,
   debug = false,
+  onLog?: (message: string) => void,
 ) {
   const [batch, setBatch] = useState<PriceUpdate[]>([]);
 
@@ -93,15 +108,16 @@ export function useRafUpdates(
       const keys = Object.keys(current);
       if (keys.length) {
         const arr = keys.map((k) => current[k]);
-        if (debug) console.log("Sending batch update:", arr);
         latestRef.current = {};
         setBatch(arr);
+
+        if (debug && onLog) onLog(`Sending batch update: ${arr.length} items`);
       }
     };
 
     frameId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frameId);
-  }, [fps, latestRef, debug]);
+  }, [fps, latestRef, onLog, debug]);
 
   return batch;
 }

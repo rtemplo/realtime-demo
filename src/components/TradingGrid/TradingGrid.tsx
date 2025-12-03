@@ -12,25 +12,19 @@ import styles from "./TradingGrid.module.css";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface TradingGridProps {
-  fps: number;
-  isConnected: boolean;
   isDarkMode: boolean;
   debug?: boolean;
   updates: PriceUpdate[];
-  onFpsChange: (fps: number) => void;
-  onToggleConnection: () => void;
-  onToggleDarkMode: () => void;
+  gridApiRef: React.RefObject<AgGridReact<PriceRow> | null>;
+  onLog?: (message: string) => void;
 }
 
 export const TradingGrid: React.FC<TradingGridProps> = ({
-  fps,
-  isConnected,
   isDarkMode,
   debug = false,
   updates,
-  onFpsChange,
-  onToggleConnection,
-  onToggleDarkMode,
+  gridApiRef,
+  onLog,
 }) => {
   /**
    * Optimizations using refs:
@@ -38,7 +32,8 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
    * Since this is a real-time updating grid, we use refs to bypass React's state update
    * cycle for certain values. This helps in achieving smoother updates in Ag-Grid.
    * This is done using Ag-Grid's Transaction Update mechanism to efficiently update only the rows
-   * that have changed.
+   * that have changed. The gridApiRef is defined in the parent component in order to share it
+   * with the ControlBar.
    *
    * The previousValuesRef is used to store the last known values of each row to determine
    * whether a price has gone up or down, enabling the cell flashing effect. It too is a ref
@@ -47,7 +42,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
    * isDarkModeRef is used within the update effect to ensure the correct theme is applied
    * during the flashing effect. It too is a ref to avoid causing re-renders when the theme changes.
    */
-  const gridRef = useRef<AgGridReact<PriceRow>>(null);
+  const gridRef = gridApiRef;
   const previousValuesRef = useRef<Record<string, PriceRow>>({});
   const isDarkModeRef = useRef(isDarkMode);
 
@@ -109,7 +104,6 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
   );
 
   React.useEffect(() => {
-    if (debug) console.log("TradingGrid received updates:", updates);
     if (!updates.length) return;
 
     const api = gridRef.current?.api;
@@ -127,9 +121,7 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
       ...u,
     }));
 
-    if (debug) console.log("Applying transaction:", updateRows);
-    const result = api.applyTransaction({ update: updateRows });
-    if (debug) console.log("Transaction result:", result);
+    api.applyTransaction({ update: updateRows });
 
     updates.forEach((update) => {
       const rowNode = api.getRowNode(update.id);
@@ -145,13 +137,12 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
           const oldValue = previousRow[field] as number;
           if (newValue === oldValue) return; // Skip if no change
 
-          const priceUp = newValue > oldValue;
-          if (debug) {
-            console.log(
-              `%c${update.id} ${field}: ${oldValue} -> ${newValue} = ${priceUp ? "⬆️" : "⬇️"}`,
-              `color: ${priceUp ? "green" : "red"}`,
-            );
-          }
+          // const priceUp = newValue > oldValue;
+          // if (debug && onLog) {
+          //   onLog(
+          //     `${update.id} ${field}: ${oldValue} -> ${newValue} ${priceUp ? "[↑ UP]" : "[↓ DOWN]"}`,
+          //   );
+          // }
 
           const cellElement = document.querySelector(
             `[row-id="${update.id}"] [col-id="${field}"]`,
@@ -200,73 +191,26 @@ export const TradingGrid: React.FC<TradingGridProps> = ({
         }
       });
     });
-  }, [updates, debug]);
+  }, [updates, gridRef?.current?.api]);
 
   const getRowId = useCallback(
     (params: { data: PriceRow }) => params.data.id,
     [],
   );
 
-  const clearFilters = () => {
-    const api = gridRef.current?.api;
-    if (api) {
-      api.setFilterModel(null);
-    }
-  };
-
   return (
-    <div>
-      <div className={styles.buttonBar}>
-        <button
-          type="button"
-          onClick={onToggleConnection}
-          className={styles.connectButton}
-          style={{
-            backgroundColor: isConnected ? "#ff4444" : "#44ff44",
-          }}
-        >
-          {isConnected ? "⏸ Stop" : "▶ Play"}
-        </button>
-        <button
-          type="button"
-          onClick={clearFilters}
-          className={styles.clearButton}
-        >
-          Clear All Filters
-        </button>
-        <button
-          type="button"
-          onClick={onToggleDarkMode}
-          className={styles.themeButton}
-        >
-          {isDarkMode ? "☀️ Light" : "🌙 Dark"}
-        </button>
-        <div className={styles.fpsControl}>
-          <label htmlFor="fps-slider">FPS: {fps}</label>
-          <input
-            id="fps-slider"
-            type="range"
-            min="1"
-            max="60"
-            value={fps}
-            onChange={(e) => onFpsChange(Number(e.target.value))}
-            className={styles.fpsSlider}
-          />
-        </div>
-      </div>
-      <div
-        className={`ag-theme-alpine ${styles.gridContainer}`}
-        style={isDarkMode ? { colorScheme: "dark" } : undefined}
-        data-theme={isDarkMode ? "dark" : "light"}
-      >
-        <AgGridReact<PriceRow>
-          ref={gridRef}
-          rowData={rowData}
-          columnDefs={columnDefs}
-          getRowId={getRowId}
-          theme="legacy"
-        />
-      </div>
+    <div
+      className={`ag-theme-alpine ${styles.gridContainer}`}
+      style={isDarkMode ? { colorScheme: "dark" } : undefined}
+      data-theme={isDarkMode ? "dark" : "light"}
+    >
+      <AgGridReact<PriceRow>
+        ref={gridRef}
+        rowData={rowData}
+        columnDefs={columnDefs}
+        getRowId={getRowId}
+        theme="legacy"
+      />
     </div>
   );
 };
